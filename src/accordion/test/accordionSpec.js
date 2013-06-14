@@ -105,6 +105,9 @@ describe('accordion', function () {
 
     var scope, $compile;
     var element, groups;
+    var findGroupElement = function (index) {
+      return groups.eq(index).eq(0);
+    };
     var findGroupLink = function (index) {
       return groups.eq(index).find('a').eq(0);
     };
@@ -173,12 +176,13 @@ describe('accordion', function () {
       beforeEach(function () {
         var tpl =
           "<accordion>" +
-            "<accordion-group ng-repeat='group in groups' heading='{{group.name}}'>{{group.content}}</accordion-group>" +
+            "<accordion-group ng-repeat='group in groups' ng-class='{\"sample-class\": group.shouldHaveClass}' heading='{{group.name}}'>{{group.content}}</accordion-group>" +
           "</accordion>";
         element = angular.element(tpl);
         model = [
           {name: 'title 1', content: 'Content 1'},
-          {name: 'title 2', content: 'Content 2'}
+          {name: 'title 2', content: 'Content 2'},
+          {name: 'title 3', content: 'Content 3', shouldHaveClass: true}
         ];
 
         $compile(element)(scope);
@@ -194,23 +198,34 @@ describe('accordion', function () {
         scope.groups = model;
         scope.$digest();
         groups = element.find('.accordion-group');
-        expect(groups.length).toEqual(2);
+        expect(groups.length).toEqual(3);
         expect(findGroupLink(0).text()).toEqual('title 1');
         expect(findGroupBody(0).text().trim()).toEqual('Content 1');
         expect(findGroupLink(1).text()).toEqual('title 2');
         expect(findGroupBody(1).text().trim()).toEqual('Content 2');
+        expect(findGroupLink(2).text()).toEqual('title 3');
+        expect(findGroupBody(2).text().trim()).toEqual('Content 3');
       });
 
       it('should react properly on removing items from the model', function () {
         scope.groups = model;
         scope.$digest();
         groups = element.find('.accordion-group');
-        expect(groups.length).toEqual(2);
+        expect(groups.length).toEqual(3);
 
         scope.groups.splice(0,1);
         scope.$digest();
         groups = element.find('.accordion-group');
-        expect(groups.length).toEqual(1);
+        expect(groups.length).toEqual(2);
+      });
+
+      it('should add class based on condition', function () {
+        scope.groups = model;
+        scope.$digest();
+        groups = element.find('.accordion-group');
+        expect(findGroupElement(0).hasClass('sample-class')).toBe(false);
+        expect(findGroupElement(1).hasClass('sample-class')).toBe(false);
+        expect(findGroupElement(2).hasClass('sample-class')).toBe(true);
       });
     });
 
